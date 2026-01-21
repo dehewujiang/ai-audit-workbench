@@ -16,15 +16,25 @@ const defaultGlobalState: GlobalState = {
   snippets: [],
   rightPanelWidthPercent: 50,
   actionPanelWidth: 300,
-  llmProfiles: [{
-    id: 'llm-default-gemini',
-    name: '默认 Gemini 3',
-    provider: 'google',
-    apiEndpoint: '',
-    apiKey: '',
-    modelName: 'gemini-3-pro-preview' // 升级至 Gemini 3 Pro
-  }],
-  activeLlmProfileId: 'llm-default-gemini',
+  llmProfiles: [
+    {
+      id: 'llm-default-deepseek',
+      name: '默认 DeepSeek',
+      provider: 'deepseek',
+      apiEndpoint: 'https://api.deepseek.com',
+      apiKey: '',
+      modelName: 'deepseek-chat'
+    },
+    {
+      id: 'llm-gemini',
+      name: 'Gemini 3 Pro',
+      provider: 'google',
+      apiEndpoint: '',
+      apiKey: '',
+      modelName: 'gemini-3-pro-preview'
+    }
+  ],
+  activeLlmProfileId: 'llm-default-deepseek',
   entityProfile: {
     industry: '',
     scale: '',

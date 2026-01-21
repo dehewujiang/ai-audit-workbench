@@ -26,6 +26,7 @@ dist-ssr
 # Sensitive files
 deploy.md
 deploy_test.md
+deploy_sop.md
 
 # Backup files
 backup/
