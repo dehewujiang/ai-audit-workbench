@@ -22,7 +22,7 @@ const defaultGlobalState: GlobalState = {
       name: '默认 DeepSeek',
       provider: 'deepseek',
       apiEndpoint: 'https://api.deepseek.com',
-      apiKey: '',
+      apiKey: import.meta.env.DEEPSEEK_API_KEY || '',
       modelName: 'deepseek-chat'
     },
     {
@@ -30,7 +30,7 @@ const defaultGlobalState: GlobalState = {
       name: 'Gemini 3 Pro',
       provider: 'google',
       apiEndpoint: '',
-      apiKey: '',
+      apiKey: import.meta.env.GEMINI_API_KEY || '',
       modelName: 'gemini-3-pro-preview'
     }
   ],
