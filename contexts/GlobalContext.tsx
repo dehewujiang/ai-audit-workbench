@@ -22,15 +22,15 @@ const defaultGlobalState: GlobalState = {
       name: '默认 DeepSeek',
       provider: 'deepseek',
       apiEndpoint: 'https://api.deepseek.com',
-      apiKey: import.meta.env.DEEPSEEK_API_KEY || '',
-      modelName: 'deepseek-chat'
+      apiKey: import.meta.env.VITE_DEEPSEEK_API_KEY || import.meta.env.DEEPSEEK_API_KEY || '',
+      modelName: 'deepseek-reasoner'
     },
     {
       id: 'llm-gemini',
       name: 'Gemini 3 Pro',
       provider: 'google',
       apiEndpoint: '',
-      apiKey: import.meta.env.GEMINI_API_KEY || '',
+      apiKey: import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.GEMINI_API_KEY || '',
       modelName: 'gemini-3-pro-preview'
     }
   ],

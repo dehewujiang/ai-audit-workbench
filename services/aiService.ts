@@ -153,8 +153,8 @@ const guestProvider = new ClientSideProvider();
 const serverProvider = new ServerSideProvider();
 
 const getProvider = (user: User | null): IAiProvider => { 
-    if (user?.id === 'guest-user-001') return guestProvider; 
-    return serverProvider; 
+    // 所有用户都使用客户端模式，直接调用 LLM API（不再依赖后端）
+    return guestProvider; 
 };
 
 // --- Exports (保持与旧 API 签名完全一致) ---
