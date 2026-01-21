@@ -1,0 +1,13 @@
+{
+  "permission": {
+    "edit": "allow",
+    "read": "allow",
+    "list": "allow",
+    "bash": {
+      "git *": "allow",
+      "npm *": "allow",
+      "*": "ask"
+    }
+  },
+  "$schema": "https://opencode.ai/config.json"
+}
