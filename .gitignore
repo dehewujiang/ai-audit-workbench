@@ -22,3 +22,15 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Sensitive files
+deploy.md
+deploy_test.md
+
+# Backup files
+backup/
+
+# Environment variables
+.env.local
+.env
+.env.*
