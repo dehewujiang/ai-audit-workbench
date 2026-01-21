@@ -132,9 +132,20 @@ const ProjectLogic: React.FC<{
                 });
                 setActiveProject(newProject);
             } else {
-                const created = await api.createProject(name);
-                setProjects(prev => [...prev, created]);
-                setActiveProject(created);
+                // 使用localStorage创建项目（不再依赖后端API）
+                const newProject = {
+                    id: `project-${Date.now()}`,
+                    name,
+                    createdAt: new Date().toISOString(),
+                    state: defaultAppState
+                };
+                const storageKey = `user-projects-${user.id}`;
+                const existing = localStorage.getItem(storageKey);
+                const projects = existing ? JSON.parse(existing) : [];
+                projects.push(newProject);
+                localStorage.setItem(storageKey, JSON.stringify(projects));
+                setProjects(prev => [...prev, newProject]);
+                setActiveProject(newProject);
             }
             closeModal();
         } catch (e) {
@@ -152,12 +163,14 @@ const ProjectLogic: React.FC<{
                 localStorage.setItem('guest-projects', JSON.stringify(updatedProjects));
                 if (activeProject?.id === projectId) setActiveProject(updatedProjects[0] || null);
             } else {
-                await api.deleteProject(projectId);
-                setProjects(prev => prev.filter(p => p.id !== projectId));
+                // 使用localStorage删除项目（不再依赖后端API）
+                const updatedProjects = projects.filter(p => p.id !== projectId);
+                localStorage.setItem(`user-projects-${user.id}`, JSON.stringify(updatedProjects));
                 if (activeProject?.id === projectId) {
-                    const remaining = projects.filter(p => p.id !== projectId);
-                    setActiveProject(remaining[0] || null);
+                    localStorage.setItem(`user-activeProjectId-${user.id}`, updatedProjects[0]?.id || '');
+                    setActiveProject(updatedProjects[0] || null);
                 }
+                setProjects(updatedProjects);
             }
         } catch (e) {
             setNotification({ message: '删除项目失败', type: 'error' });
@@ -201,12 +214,20 @@ export const ProjectProvider: React.FC<{ children: ReactNode }> = ({ children })
                     setActiveProject(loaded.find((p: Project) => p.id === activeId) || loaded[0] || null);
                 }
             } else if (user) {
-                try {
-                    const { projects, globalState, activeProjectId } = await api.getBootstrapData();
-                    setProjects(projects);
-                    updateGlobalState(globalState);
-                    setActiveProject(projects.find((p: Project) => p.id === activeProjectId) || projects[0] || null);
-                } catch(e) {}
+                // 使用localStorage存储（不再依赖后端API）
+                const saved = localStorage.getItem(`user-projects-${user.id}`);
+                const activeId = localStorage.getItem(`user-activeProjectId-${user.id}`);
+                const savedGlobal = localStorage.getItem(`user-globalState-${user.id}`);
+                if (saved) {
+                    const loaded = JSON.parse(saved);
+                    setProjects(loaded);
+                    setActiveProject(loaded.find((p: Project) => p.id === activeId) || loaded[0] || null);
+                }
+                if (savedGlobal) {
+                    try {
+                        updateGlobalState(JSON.parse(savedGlobal));
+                    } catch(e) {}
+                }
             }
             setIsLoadingState(false);
         };
