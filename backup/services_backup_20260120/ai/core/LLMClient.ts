@@ -6,16 +6,12 @@ import { sanitizeMessages } from './streamUtils';
 
 export class GeminiClient implements ILlmClient {
     private modelName: string;
-    private apiKey: string;
-    
     constructor(profile: LLMProfile) { 
-        this.modelName = profile.modelName || 'gemini-3-pro-preview';
-        this.apiKey = profile.apiKey;
+        this.modelName = profile.modelName || 'gemini-3-pro-preview'; 
     }
     
     async *generateStream({ messages, systemInstruction, jsonMode, signal }: any): AsyncGenerator<StreamChunk> {
-        if (!this.apiKey) throw new Error("Gemini API Key is missing.");
-        const ai = new GoogleGenAI({ apiKey: this.apiKey });
+        const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
         
         const safeMessages = sanitizeMessages(messages);
         

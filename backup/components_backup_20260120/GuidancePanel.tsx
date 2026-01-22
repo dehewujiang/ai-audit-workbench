@@ -140,7 +140,7 @@ const stageFields: Record<number, { name: string, label: string, helpText?: stri
 
 export const GuidancePanel: React.FC<GuidancePanelProps> = ({ projectName, user, isOverviewMode }) => {
   const { activeProjectState, handleGuidanceUpdate, handleGuidanceSave, handleGenerateProgram } = useProject();
-  const { globalState, activeLlmProfile } = useGlobal();
+  const { globalState } = useGlobal();
   
   // Safe access to state with defaults to prevent crashes
   const currentStage = activeProjectState?.guidanceStage || 1;
@@ -191,7 +191,6 @@ export const GuidancePanel: React.FC<GuidancePanelProps> = ({ projectName, user,
               collectedData: dataRef.current,
               user,
               entityProfile: globalState.entityProfile,
-              llmProfile: activeLlmProfile,
           });
           setAiContentCache(prev => ({ ...prev, [cacheKey]: content }));
       } catch (error) {
@@ -206,7 +205,7 @@ export const GuidancePanel: React.FC<GuidancePanelProps> = ({ projectName, user,
               return newSet;
           });
       }
-  }, [aiContentCache, projectName, user, globalState.entityProfile, activeLlmProfile]);
+  }, [aiContentCache, projectName, user, globalState.entityProfile]);
 
 
   useEffect(() => {

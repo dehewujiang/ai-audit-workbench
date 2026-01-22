@@ -24,12 +24,8 @@ dist-ssr
 *.sw?
 
 # Sensitive files
-deploy.md
 deploy_test.md
 deploy_sop.md
-
-# Backup files
-backup/
 
 # Environment variables
 .env.local
@@ -38,3 +34,26 @@ backup/
 
 # OpenCode configuration
 opencode.json
+
+# Project documentation
+deploy.md
+
+# 工作记录和诊断报告（不推送到GitHub）
+AI_DIAGNOSIS_REPORT.md
+WORK_SUMMARY_*.md
+
+# 备份文件
+*.backup
+deploy.md.backup
+
+# 临时文件
+nul
+
+# 测试文件（仅本地使用）
+test-*.js
+browser-diagnosis.js
+playwright-diagnosis.js
+test-app-config.js
+
+# 文档归档目录（不推送到GitHub）
+docs/
