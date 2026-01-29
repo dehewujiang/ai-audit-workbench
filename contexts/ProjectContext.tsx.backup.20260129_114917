@@ -1,6 +1,7 @@
-import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
-import { Project, AppState, ProjectContextType } from '../types';
+import React, { createContext, useState, useContext, ReactNode, useEffect, useCallback } from 'react';
+import { Project, AppState, LoadingStateKey, ProjectContextType } from '../types';
 import { useAuth } from '../AuthContext';
+import * as api from '../services/api';
 import { useGlobal } from './GlobalContext';
 import { useUI } from './UIContext';
 
@@ -98,62 +99,20 @@ const ProjectLogic: React.FC<{
         distilledContext: auditCtx.distilledContext,
     };
 
-useEffect(() => {
-    if (!activeProject || !user) return;
-    
-    const currentStateSnapshot: AppState = activeProjectState;
-    const updatedProject = { ...activeProject, state: currentStateSnapshot };
-    
-    // 确定存储 key
-    const storageKey = user.id === 'guest-user-001' ? 'guest-projects' : `user-projects-${user.id}`;
-    const savedProjects = localStorage.getItem(storageKey);
-    
-    if (savedProjects) {
-      const parsed = JSON.parse(savedProjects) as Project[];
-      const newProjects = parsed.map(p => p.id === activeProject.id ? updatedProject : p);
-      localStorage.setItem(storageKey, JSON.stringify(newProjects));
-      
-      // 同步更新内存中的 projects 数组
-      setProjects(prev => prev.map(p => p.id === activeProject.id ? updatedProject : p));
-      
-      console.log(`[ProjectContext] Saved project ${activeProject.id} to localStorage`);
-    }
-  }, [
-    // 聊天相关
-    chatCtx.messages,
-    // 审计程序相关
-    auditCtx.auditPrograms,
-    auditCtx.activeProgramId,
-    auditCtx.draftProgram,
-    // 审计发现相关
-    auditCtx.findings,
-    // 舞弊分析相关
-    auditCtx.fraudAnalyses,
-    auditCtx.currentFraudPlan,
-    auditCtx.lastFraudAnalysisResult,
-    // 挑战模式相关
-    auditCtx.currentChallengePlan,
-    auditCtx.lastChallengeResult,
-    // 报告相关
-    auditCtx.generatedReportContent,
-    auditCtx.reportGenerationTitle,
-    auditCtx.currentReportPlan,
-    auditCtx.pendingReportConfig,
-    // 发现分析相关
-    auditCtx.currentFindingAnalysisPlan,
-    auditCtx.pendingFindingData,
-    // 引导数据
-    auditCtx.collectedGuidanceData,
-    auditCtx.guidanceStage,
-    // UI 状态
-    auditCtx.activeTab,
-    auditCtx.pinnedFileIds,
-    // 脱水上下文
-    auditCtx.distilledContext,
-    // 上下文依赖
-    activeProject,
-    user,
-  ]);
+    useEffect(() => {
+        if (!activeProject) return;
+        const currentStateSnapshot: AppState = activeProjectState;
+        const updatedProject = { ...activeProject, state: currentStateSnapshot };
+        
+        if (user?.id === 'guest-user-001') {
+             const savedProjects = localStorage.getItem('guest-projects');
+             if (savedProjects) {
+                 const parsed = JSON.parse(savedProjects) as Project[];
+                 const newProjects = parsed.map(p => p.id === activeProject.id ? updatedProject : p);
+                 localStorage.setItem('guest-projects', JSON.stringify(newProjects));
+             }
+        }
+    }, [chatCtx.messages, auditCtx.auditPrograms, auditCtx.findings, auditCtx.collectedGuidanceData, auditCtx.fraudAnalyses, auditCtx.activeTab, auditCtx.lastChallengeResult, auditCtx.lastFraudAnalysisResult, auditCtx.distilledContext]);
 
     const handleCreateProject = async (name: string) => {
         chatCtx.setLoadingState('isCreatingProject', true);
@@ -172,22 +131,22 @@ useEffect(() => {
                     return updated;
                 });
                 setActiveProject(newProject);
-} else if (user) {
-      // 使用localStorage创建项目（不再依赖后端API）
-      const newProject = {
-        id: `project-${Date.now()}`,
-        name,
-        createdAt: new Date().toISOString(),
-        state: defaultAppState
-      };
-      const storageKey = `user-projects-${user.id}`;
-      const existing = localStorage.getItem(storageKey);
-      const userProjects = existing ? JSON.parse(existing) : [];
-      userProjects.push(newProject);
-      localStorage.setItem(storageKey, JSON.stringify(userProjects));
-      setProjects(prev => [...prev, newProject]);
-      setActiveProject(newProject);
-    }
+            } else {
+                // 使用localStorage创建项目（不再依赖后端API）
+                const newProject = {
+                    id: `project-${Date.now()}`,
+                    name,
+                    createdAt: new Date().toISOString(),
+                    state: defaultAppState
+                };
+                const storageKey = `user-projects-${user.id}`;
+                const existing = localStorage.getItem(storageKey);
+                const projects = existing ? JSON.parse(existing) : [];
+                projects.push(newProject);
+                localStorage.setItem(storageKey, JSON.stringify(projects));
+                setProjects(prev => [...prev, newProject]);
+                setActiveProject(newProject);
+            }
             closeModal();
         } catch (e) {
             setNotification({ message: '创建项目失败', type: 'error' });
@@ -196,63 +155,32 @@ useEffect(() => {
         }
     };
 
-const deleteProject = async (projectId: string) => {
-    try {
-      if (user?.id === 'guest-user-001') {
-        const updatedProjects = projects.filter(p => p.id !== projectId);
-        setProjects(updatedProjects);
-        localStorage.setItem('guest-projects', JSON.stringify(updatedProjects));
-        if (activeProject?.id === projectId) setActiveProject(updatedProjects[0] || null);
-      } else if (user) {
-        // 使用localStorage删除项目（不再依赖后端API）
-        const updatedProjects = projects.filter(p => p.id !== projectId);
-        localStorage.setItem(`user-projects-${user.id}`, JSON.stringify(updatedProjects));
-        if (activeProject?.id === projectId) {
-          localStorage.setItem(`user-activeProjectId-${user.id}`, updatedProjects[0]?.id || '');
-          setActiveProject(updatedProjects[0] || null);
+    const deleteProject = async (projectId: string) => {
+        try {
+            if (user?.id === 'guest-user-001') {
+                const updatedProjects = projects.filter(p => p.id !== projectId);
+                setProjects(updatedProjects);
+                localStorage.setItem('guest-projects', JSON.stringify(updatedProjects));
+                if (activeProject?.id === projectId) setActiveProject(updatedProjects[0] || null);
+            } else {
+                // 使用localStorage删除项目（不再依赖后端API）
+                const updatedProjects = projects.filter(p => p.id !== projectId);
+                localStorage.setItem(`user-projects-${user.id}`, JSON.stringify(updatedProjects));
+                if (activeProject?.id === projectId) {
+                    localStorage.setItem(`user-activeProjectId-${user.id}`, updatedProjects[0]?.id || '');
+                    setActiveProject(updatedProjects[0] || null);
+                }
+                setProjects(updatedProjects);
+            }
+        } catch (e) {
+            setNotification({ message: '删除项目失败', type: 'error' });
         }
-        setProjects(updatedProjects);
-      }
-    } catch (e) {
-      setNotification({ message: '删除项目失败', type: 'error' });
-    }
-  };
+    };
 
-const switchProject = (id: string) => {
-    // 防御性保存：切换前保存当前项目状态
-    if (activeProject && user) {
-      console.log(`[ProjectContext] Preparing to switch from ${activeProject.id} to ${id}`);
-      
-      const currentStateSnapshot: AppState = activeProjectState;
-      const updatedProject = { ...activeProject, state: currentStateSnapshot };
-      
-      const storageKey = user.id === 'guest-user-001' ? 'guest-projects' : `user-projects-${user.id}`;
-      const savedProjects = localStorage.getItem(storageKey);
-      
-      if (savedProjects) {
-        const parsed = JSON.parse(savedProjects) as Project[];
-        const newProjects = parsed.map(p => p.id === activeProject.id ? updatedProject : p);
-        localStorage.setItem(storageKey, JSON.stringify(newProjects));
-        console.log(`[ProjectContext] Saved current project ${activeProject.id} before switch`);
-      }
-      
-      // 更新内存中的 projects 数组
-      setProjects(prev => prev.map(p => p.id === activeProject.id ? updatedProject : p));
-    }
-    
-    // 执行切换
-    const targetProject = projects.find(p => p.id === id);
-    if (targetProject) {
-      setActiveProject(targetProject);
-      
-      // 保存当前活跃项目ID
-      if (user) {
-        const activeKey = user.id === 'guest-user-001' ? 'guest-activeProjectId' : `user-activeProjectId-${user.id}`;
-        localStorage.setItem(activeKey, id);
-        console.log(`[ProjectContext] Switched to project ${id}, saved active project ID`);
-      }
-    }
-  };
+    const switchProject = (id: string) => { 
+        const p = projects.find(p => p.id === id); 
+        if(p) setActiveProject(p);
+    };
 
     return (
         <ProjectContext.Provider value={{
