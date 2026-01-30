@@ -256,6 +256,7 @@ export interface GlobalState {
   llmProfiles: LLMProfile[];
   activeLlmProfileId: string | null;
   entityProfile: EntityProfile;
+  hasCompletedEntityProfile?: boolean;
 }
 
 export interface Project {

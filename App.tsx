@@ -95,16 +95,19 @@ export const App: React.FC = () => {
     }
   }, [notification, setNotification]);
 
-  // Onboarding: Prompt for Entity Profile if missing
+// Onboarding: Prompt for Entity Profile if missing
   useEffect(() => {
-      // Delay check slightly to ensure everything is loaded
-      const timer = setTimeout(() => {
-          if (globalState.entityProfile && !globalState.entityProfile.industry && !activeModal) {
-              showModal('entityProfile');
-          }
-      }, 1500);
-      return () => clearTimeout(timer);
-  }, [globalState.entityProfile, showModal, activeModal]);
+    // Delay check slightly to ensure everything is loaded
+    const timer = setTimeout(() => {
+      // 只有从未填写过企业档案时才强制弹出
+      const hasCompletedEntityProfile = globalState.hasCompletedEntityProfile ?? 
+        (globalState.entityProfile.industry || globalState.entityProfile.scale || globalState.entityProfile.coreSystems);
+      if (globalState.entityProfile && !globalState.entityProfile.industry && !hasCompletedEntityProfile && !activeModal) {
+        showModal('entityProfile');
+      }
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, [globalState.entityProfile, globalState.hasCompletedEntityProfile, showModal, activeModal]);
 
   // Resizer for middle/right panels
   useEffect(() => {

@@ -42,7 +42,8 @@ const defaultGlobalState: GlobalState = {
     regulatoryFramework: '',
     riskAppetite: '',
     description: ''
-  }
+  },
+  hasCompletedEntityProfile: false
 };
 
 interface GlobalContextType {
@@ -67,48 +68,51 @@ export const GlobalProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   const [globalState, setGlobalState] = useState<GlobalState>(defaultGlobalState);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
 
-  // Load global state on mount
+// Load global state on mount
   useEffect(() => {
-    if (user?.id === 'guest-user-001') {
-      const savedStateJSON = localStorage.getItem('guest-globalState');
-      if (savedStateJSON) {
-        try {
-          let savedState = JSON.parse(savedStateJSON);
-
-          // Sanitize loaded state
-          if (typeof savedState.rightPanelWidthPercent !== 'number' || savedState.rightPanelWidthPercent < 10 || savedState.rightPanelWidthPercent > 90) {
-            savedState.rightPanelWidthPercent = defaultGlobalState.rightPanelWidthPercent;
-          }
-          if (typeof savedState.actionPanelWidth !== 'number' || savedState.actionPanelWidth < 200 || savedState.actionPanelWidth > 600) {
-            savedState.actionPanelWidth = defaultGlobalState.actionPanelWidth;
-          }
-          // Ensure entityProfile exists
-          if (!savedState.entityProfile) {
-            savedState.entityProfile = defaultGlobalState.entityProfile;
-          }
-
-          setGlobalState(savedState);
-        } catch (e) {
-          console.error("Failed to parse guest global state, resetting.", e);
-          setGlobalState(defaultGlobalState);
+    if (!user) return;
+    
+    const storageKey = user.id === 'guest-user-001' ? 'guest-globalState' : `user-globalState-${user.id}`;
+    const savedStateJSON = localStorage.getItem(storageKey);
+    
+    if (savedStateJSON) {
+      try {
+        let savedState = JSON.parse(savedStateJSON);
+        
+        // Sanitize loaded state
+        if (typeof savedState.rightPanelWidthPercent !== 'number' || savedState.rightPanelWidthPercent < 10 || savedState.rightPanelWidthPercent > 90) {
+          savedState.rightPanelWidthPercent = defaultGlobalState.rightPanelWidthPercent;
         }
-      } else {
+        if (typeof savedState.actionPanelWidth !== 'number' || savedState.actionPanelWidth < 200 || savedState.actionPanelWidth > 600) {
+          savedState.actionPanelWidth = defaultGlobalState.actionPanelWidth;
+        }
+        // Ensure entityProfile exists
+        if (!savedState.entityProfile) {
+          savedState.entityProfile = defaultGlobalState.entityProfile;
+        }
+        
+        setGlobalState(savedState);
+      } catch (e) {
+        console.error("Failed to parse global state, resetting.", e);
         setGlobalState(defaultGlobalState);
       }
+    } else {
+      setGlobalState(defaultGlobalState);
     }
   }, [user]);
 
-  useEffect(() => {
-    if (user?.id === 'guest-user-001') {
-      setSaveStatus('saving');
-      const handler = setTimeout(() => {
-        localStorage.setItem('guest-globalState', JSON.stringify(globalState));
-        setSaveStatus('saved');
-        const hideHandler = setTimeout(() => setSaveStatus('idle'), 2000);
-        return () => clearTimeout(hideHandler);
-      }, 1000);
-      return () => clearTimeout(handler);
-    }
+useEffect(() => {
+    if (!user) return;
+    
+    setSaveStatus('saving');
+    const handler = setTimeout(() => {
+      const storageKey = user.id === 'guest-user-001' ? 'guest-globalState' : `user-globalState-${user.id}`;
+      localStorage.setItem(storageKey, JSON.stringify(globalState));
+      setSaveStatus('saved');
+      const hideHandler = setTimeout(() => setSaveStatus('idle'), 2000);
+      return () => clearTimeout(hideHandler);
+    }, 1000);
+    return () => clearTimeout(handler);
   }, [globalState, user]);
 
   const handleDeleteSnippet = (id: string) => {
@@ -119,9 +123,9 @@ export const GlobalProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     setGlobalState(prev => ({ ...prev, llmProfiles: profiles, activeLlmProfileId: activeId }));
   };
   
-  const handleUpdateEntityProfile = (profile: EntityProfile) => {
-    setGlobalState(prev => ({ ...prev, entityProfile: profile }));
-  };
+const handleUpdateEntityProfile = (profile: EntityProfile) => {
+  setGlobalState(prev => ({ ...prev, entityProfile: profile, hasCompletedEntityProfile: true }));
+};
 
   const activeLlmProfile = globalState.llmProfiles.find(p => p.id === globalState.activeLlmProfileId) || null;
 
