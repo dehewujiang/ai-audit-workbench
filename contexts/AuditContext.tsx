@@ -28,6 +28,7 @@ interface AuditContextType {
   currentReportPlan: string | null;
   pendingReportConfig: { title: string, auditee: string, auditor: string, includedFindingIds: string[] } | null;
   pendingFindingData: { condition: string, criteria: string, effect: string, cause?: string, answers: string } | null;
+  hasCompletedGuidance?: boolean;
 
   // Setters
   setAuditPrograms: React.Dispatch<React.SetStateAction<AuditProgram[]>>;
@@ -38,6 +39,7 @@ interface AuditContextType {
   setGeneratedReportContent: (content: string) => void;
   setGuidanceStage: (stage: number) => void;
   setCollectedGuidanceData: React.Dispatch<React.SetStateAction<Record<string, any>>>;
+  setHasCompletedGuidance: (value: boolean) => void;
   setPinnedFileIds: React.Dispatch<React.SetStateAction<string[]>>;
   
   // Specific Updaters
@@ -76,6 +78,7 @@ export const AuditProvider: React.FC<{ children: ReactNode; initialState?: Parti
   const [currentFindingAnalysisPlan, setCurrentFindingAnalysisPlan] = useState<string | null>(initialState.currentFindingAnalysisPlan || null);
   const [pendingReportConfig, setPendingReportConfig] = useState<any>(initialState.pendingReportConfig || null);
   const [pendingFindingData, setPendingFindingData] = useState<any>(initialState.pendingFindingData || null);
+  const [hasCompletedGuidance, setHasCompletedGuidance] = useState<boolean>(initialState.hasCompletedGuidance ?? true);
 
   const setActiveTab = useCallback((tab: AppState['activeTab']) => {
       setActiveTabState(tab);
@@ -100,9 +103,10 @@ export const AuditProvider: React.FC<{ children: ReactNode; initialState?: Parti
       if (updates.lastFraudAnalysisResult !== undefined) setLastFraudAnalysisResult(updates.lastFraudAnalysisResult);
       if (updates.currentReportPlan !== undefined) setCurrentReportPlan(updates.currentReportPlan);
       if (updates.currentFindingAnalysisPlan !== undefined) setCurrentFindingAnalysisPlan(updates.currentFindingAnalysisPlan);
-      if (updates.pendingReportConfig !== undefined) setPendingReportConfig(updates.pendingReportConfig);
-      if (updates.pendingFindingData !== undefined) setPendingFindingData(updates.pendingFindingData);
-      if (updates.reportGenerationTitle !== undefined) setReportGenerationTitle(updates.reportGenerationTitle);
+  if (updates.pendingReportConfig !== undefined) setPendingReportConfig(updates.pendingReportConfig);
+  if (updates.pendingFindingData !== undefined) setPendingFindingData(updates.pendingFindingData);
+  if (updates.hasCompletedGuidance !== undefined) setHasCompletedGuidance(updates.hasCompletedGuidance);
+  if (updates.reportGenerationTitle !== undefined) setReportGenerationTitle(updates.reportGenerationTitle);
   }, []);
 
   const updateFinding = useCallback((updatedFinding: Finding) => {
@@ -146,6 +150,8 @@ export const AuditProvider: React.FC<{ children: ReactNode; initialState?: Parti
       currentReportPlan,
       pendingReportConfig,
       pendingFindingData,
+      hasCompletedGuidance,
+      setHasCompletedGuidance,
       updateAuditState,
       updateFinding,
       addFinding,

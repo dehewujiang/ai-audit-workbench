@@ -1,6 +1,6 @@
 
 import { AuditProgram } from '../../../types';
-import { AUDIT_PROGRAM_SCHEMA } from '../schemas';
+import { AUDIT_PROGRAM_SCHEMA, FEASIBILITY_SCHEMA } from '../schemas';
 
 // --- Helpers ---
 export const simplifyProgramForAI = (program: AuditProgram): any => {
@@ -104,7 +104,6 @@ export const buildChallengeExecutionPrompt = (latestProgram: AuditProgram, plan:
 };
 
 export const buildFeasibilityPrompt = (procedure: any) => {
-    const { FEASIBILITY_SCHEMA } = require('../schemas'); // Lazy load to avoid circular issues if any
     return `
 任务：评估以下审计程序在实际执行中的可行性，并识别潜在障碍。
 输出要求：返回一个 JSON 对象，严格遵循以下结构。

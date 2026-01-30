@@ -212,6 +212,18 @@ export const App: React.FC = () => {
   const { setActiveTab } = useProject();
   const activeProgram = activeProjectState.auditPrograms.find(p => p.id === activeProjectState.activeProgramId) || null;
 
+  const hasGuidanceData = Object.keys(activeProjectState.collectedGuidanceData).some(key => {
+      const value = activeProjectState.collectedGuidanceData[key];
+      if (Array.isArray(value)) return value.length > 0;
+      return !!value;
+  });
+  const hasCompletedGuidance = activeProjectState.hasCompletedGuidance ?? hasGuidanceData;
+  const shouldShowGuidanceWizard = 
+      activeProjectState.guidanceStage > 0 && 
+      activeProjectState.guidanceStage <= 8 && 
+      !hasCompletedGuidance && 
+      !hasGuidanceData;
+
   return (
     <div className="h-screen flex flex-col font-sans bg-slate-200 text-slate-800 selection:bg-blue-100 selection:text-blue-900">
         {notification && (
@@ -289,7 +301,7 @@ export const App: React.FC = () => {
                 </div>
                 {/* Changed bg-slate-50/30 to bg-white here */}
                 <div className="flex-1 flex flex-col min-h-0 bg-white">
-                    {activeProjectState.guidanceStage > 0 && activeProjectState.guidanceStage <= 8 ? (
+                    {shouldShowGuidanceWizard ? (
                         <GuidancePanel
                             projectName={activeProject.name}
                             user={user}
@@ -321,7 +333,7 @@ export const App: React.FC = () => {
                 </div>
             </div>
             
-            <ChatbotWidget isHidden={activeProjectState.guidanceStage > 0 && activeProjectState.guidanceStage <= 8} />
+            <ChatbotWidget isHidden={shouldShowGuidanceWizard} />
             
             {/* --- Modals --- */}
             <FindingAnalysisModal isOpen={activeModal === 'finding'} onClose={closeModal} />

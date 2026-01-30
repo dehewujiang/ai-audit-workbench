@@ -34,10 +34,11 @@ const defaultAppState: AppState = {
   lastChallengeResult: null,
   currentFraudPlan: null,
   lastFraudAnalysisResult: null,
-  currentReportPlan: null, 
+  currentReportPlan: null,
   pendingReportConfig: null,
   currentFindingAnalysisPlan: null,
   pendingFindingData: null,
+  hasCompletedGuidance: false,
 };
 
 const ProjectContext = createContext<ProjectContextType | null>(null);
@@ -96,6 +97,7 @@ const ProjectLogic: React.FC<{
         currentFindingAnalysisPlan: auditCtx.currentFindingAnalysisPlan,
         pendingFindingData: auditCtx.pendingFindingData,
         distilledContext: auditCtx.distilledContext,
+        hasCompletedGuidance: auditCtx.hasCompletedGuidance,
     };
 
 useEffect(() => {

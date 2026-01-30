@@ -566,8 +566,21 @@ ${fraudCasesText || "未生成具体场景"}
         }
     }, [handleExecutePlan, handleExecuteChallenge, handleExecuteFraudAnalysis, handleExecuteFindingAnalysis, handleExecuteReport, showModal, setSelectedItemId, auditCtx.setActiveTab]);
 
-    const handleGuidanceUpdate = useCallback((d: any, n: number) => { auditCtx.updateAuditState({ collectedGuidanceData: {...auditCtx.collectedGuidanceData, ...d}, guidanceStage: n }); }, [auditCtx]);
-    const handleGuidanceSave = useCallback((d: any) => { auditCtx.setCollectedGuidanceData(prev => ({...prev, ...d})); }, [auditCtx]);
+    const handleGuidanceUpdate = useCallback((d: any, n: number) => { 
+        const { hasCompletedGuidance, ...restData } = d;
+        auditCtx.updateAuditState({ 
+            collectedGuidanceData: {...auditCtx.collectedGuidanceData, ...restData}, 
+            guidanceStage: n,
+            ...(hasCompletedGuidance !== undefined && { hasCompletedGuidance })
+        }); 
+    }, [auditCtx]);
+    const handleGuidanceSave = useCallback((d: any) => { 
+        const { hasCompletedGuidance, ...restData } = d;
+        auditCtx.setCollectedGuidanceData(prev => ({...prev, ...restData}));
+        if (hasCompletedGuidance !== undefined) {
+            auditCtx.setHasCompletedGuidance(hasCompletedGuidance);
+        }
+    }, [auditCtx]);
     const handleUpdateProgram = useCallback((program: AuditProgram, newProcedures: AuditProcedure[]) => { auditCtx.updateProgram({ ...program, procedures: newProcedures }); }, [auditCtx]);
 
     return {

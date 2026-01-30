@@ -231,13 +231,12 @@ export const GuidancePanel: React.FC<GuidancePanelProps> = ({ projectName, user,
   };
 
   const handleNav = (nextStage: number) => {
-    // Save current data
-    handleGuidanceUpdate(formData, nextStage);
-    
-    // If finishing the last stage (8 -> 9), Trigger Generation
+    // 完成8个阶段时，标记已完向导并触发生成
     if (currentStage === 8 && nextStage === 9) {
-        // Trigger generation immediately
+        handleGuidanceUpdate({ ...formData, hasCompletedGuidance: true }, nextStage);
         handleGenerateProgram("项目背景信息已收集完毕，请基于这些信息生成审计程序。");
+    } else {
+        handleGuidanceUpdate(formData, nextStage);
     }
   };
 
@@ -247,6 +246,7 @@ export const GuidancePanel: React.FC<GuidancePanelProps> = ({ projectName, user,
 
   const handleConfirmSkip = () => {
       setShowSkipWarning(false);
+      handleGuidanceSave({ ...stageFormData, hasCompletedGuidance: true });
       handleNav(0);
   };
 

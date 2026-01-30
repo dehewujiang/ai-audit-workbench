@@ -243,7 +243,8 @@ export interface AppState {
   pendingReportConfig: { title: string, auditee: string, auditor: string, includedFindingIds: string[] } | null;
   currentFindingAnalysisPlan: string | null;
   pendingFindingData: { condition: string, criteria: string, effect: string, cause?: string, answers: string } | null;
-  distilledContext?: DistilledContext; // 新增：特征提取后的上下文存储
+  distilledContext?: DistilledContext;
+  hasCompletedGuidance?: boolean;
 }
 
 export interface GlobalState {
