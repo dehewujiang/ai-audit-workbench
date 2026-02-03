@@ -78,7 +78,7 @@ export const AuditProvider: React.FC<{ children: ReactNode; initialState?: Parti
   const [currentFindingAnalysisPlan, setCurrentFindingAnalysisPlan] = useState<string | null>(initialState.currentFindingAnalysisPlan || null);
   const [pendingReportConfig, setPendingReportConfig] = useState<any>(initialState.pendingReportConfig || null);
   const [pendingFindingData, setPendingFindingData] = useState<any>(initialState.pendingFindingData || null);
-  const [hasCompletedGuidance, setHasCompletedGuidance] = useState<boolean>(initialState.hasCompletedGuidance ?? true);
+  const [hasCompletedGuidance, setHasCompletedGuidance] = useState<boolean>(initialState.hasCompletedGuidance ?? false);
 
   const setActiveTab = useCallback((tab: AppState['activeTab']) => {
       setActiveTabState(tab);
