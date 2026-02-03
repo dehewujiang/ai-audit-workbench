@@ -69,7 +69,11 @@ export const FEASIBILITY_SCHEMA = {
 };
 
 // 引导式问卷选项输出结构
+// 增强版 Schema (向下兼容): 支持 category/confidence/reasoningChain
 export const GUIDANCE_OPTIONS_SCHEMA = {
     options: ["选项1", "选项2", "选项3", "选项4", "选项5"],
-    explanation: "为什么推荐这些选项的简要说明"
+    explanation: "为什么推荐这些选项的简要说明",
+    category: "风险类别标签 (如: 合规风险, 运营风险, 舞弊风险, 财务风险)",
+    confidence: "high/medium/low - AI对建议的置信度评分",
+    reasoningChain: "AI的思考过程摘要 (字段识别→场景映射→具象化→去审计化)"
 };

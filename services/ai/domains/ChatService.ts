@@ -94,7 +94,15 @@ export class ChatService {
         llmProfile: any;
     }) { 
         const client = createLlmClient(args.llmProfile);
-        const prompt = buildGuidanceOptionsPrompt(args.stageNumber, args.fieldLabel);
+        // PROF-REFACTOR-001: 重构为 GuidanceContext，注入完整项目背景
+        const prompt = buildGuidanceOptionsPrompt({
+            projectName: args.projectName,
+            fieldLabel: args.fieldLabel,
+            fieldName: args.fieldName,
+            stageNumber: args.stageNumber,
+            entityProfile: args.entityProfile,
+            collectedData: args.collectedData
+        });
         const sys = buildSystemPrompt(args.entityProfile, args.projectName, args.collectedData);
 
         const generator = streamJson<{options: string[], explanation: string}>(
